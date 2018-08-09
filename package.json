@@ -2,9 +2,13 @@
   "name": "wunderp-node",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "wunderp.js",
   "scripts": {
+    "start": "node wunderp.js",
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "engines": {
+    "node": "10.7.0"
   },
   "author": "",
   "license": "ISC",
