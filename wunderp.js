@@ -4,7 +4,7 @@ const {ObjectID} = require('mongodb');
 const _ = require('lodash');
 
 const {mongoose} = require('./db/mongoose');
-const {authenticate} = require('./middleware/authenticate');
+const {authenticate, authenticateAdmin} = require('./middleware/authenticate');
 const {User} = require('./models/user');
 const {Account} = require('./models/account');
 
@@ -19,8 +19,8 @@ app.get('/', (req, res) => {
     res.send('Yo!');
 });
 
-app.post('/users', (req, res) => {
-    var body = _.pick(req.body, ['email', 'password']);
+app.post('/users', authenticateAdmin, (req, res) => {
+    var body = _.pick(req.body, ['email', 'password', 'role']);
     var user = new User(body);
   
     user.save().then(() => {
@@ -56,7 +56,7 @@ app.delete('/users/me/token', authenticate, (req, res) => {
     });
 });
 
-app.post('/accounts', (req, res) => {
+app.post('/accounts', authenticate, (req, res) => {
     var body = _.pick(req.body, [
         'openingCash', 
         'openingDate', 
@@ -77,6 +77,40 @@ app.post('/accounts', (req, res) => {
         res.status(400).send(e);
     });
 });
+
+app.get('/accounts', authenticate, (req, res) => {
+    Account.find().then((accounts) => {
+      res.send({accounts});
+    }, (e) => {
+      res.status(400).send(e);
+    });
+  });
+
+  app.get('/accounts/:id', authenticate, (req, res) => {
+    Account.findById(req.params.id).then((account) => {
+      res.send(account);
+    }, (e) => {
+      res.status(400).send(e);
+    });
+  });
+
+  app.delete('/accounts/:id', authenticate, (req, res) => {
+    var id = req.params.id;
+  
+    if (!ObjectID.isValid(id)) {
+      return res.status(404).send();
+    }
+  
+    Account.findOneAndRemove(id).then((account) => {
+      if (!account) {
+        return res.status(404).send();
+      }
+  
+      res.send(account);
+    }).catch((e) => {
+      res.status(400).send();
+    });
+  });
 
 app.listen(port, (err) => {
     console.log(`Listening on port ${port}.`);

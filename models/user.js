@@ -18,8 +18,13 @@ let UserSchema = new mongoose.Schema({
     },
     password: {
       type: String,
-      require: true,
+      required: true,
       minlength: 6
+    },
+    role: {
+      type: String,
+      required: true,
+      minlength: 4
     },
     tokens: [{
       access: {
