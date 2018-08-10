@@ -6,6 +6,7 @@ const _ = require('lodash');
 const {mongoose} = require('./db/mongoose');
 const {authenticate} = require('./middleware/authenticate');
 const {User} = require('./models/user');
+const {Account} = require('./models/account');
 
 require('./config/config')
 
@@ -52,6 +53,17 @@ app.delete('/users/me/token', authenticate, (req, res) => {
         res.status(200).send();
     }, () => {
         res.status(400).send();
+    });
+});
+
+app.post('/accounts', (req, res) => {
+    var body = _.pick(req.body, ['openingCash', 'openingDate', 'opener']);
+    var account = new Account(body);
+  
+    account.save().then((doc) => {
+        res.set(200).send(doc);
+    }, (e) => {
+        res.status(400).send(e);
     });
 });
 
