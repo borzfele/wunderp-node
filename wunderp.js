@@ -57,7 +57,18 @@ app.delete('/users/me/token', authenticate, (req, res) => {
 });
 
 app.post('/accounts', (req, res) => {
-    var body = _.pick(req.body, ['openingCash', 'openingDate', 'opener']);
+    var body = _.pick(req.body, [
+        'openingCash', 
+        'openingDate', 
+        'opener', 
+        'transactions',
+        'closingCash', 
+        'closingDate', 
+        'closer', 
+        'cassaBalance', 
+        'posBalance', 
+        'totalBalance', 
+        'comments']);
     var account = new Account(body);
   
     account.save().then((doc) => {
