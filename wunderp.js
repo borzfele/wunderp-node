@@ -7,6 +7,7 @@ const {mongoose} = require('./db/mongoose');
 const {authenticate, authenticateAdmin} = require('./middleware/authenticate');
 const {User} = require('./models/user');
 const {Account} = require('./models/account');
+const {Transaction} = require('./models/transaction');
 
 require('./config/config');
 
@@ -163,6 +164,25 @@ app.patch('/accounts/close', authenticate, (req, res) => {
           }).catch((e) => {
             res.status(400).send();
           })
+    });
+});
+
+app.post('/transactions', authenticate, (req, res) => {
+    var body = _.pick(req.body, [
+        'value',
+        'description',
+        'issue'
+        ]);
+
+    var transaction = new Transaction(body);
+
+    transaction.createdBy = req.user._id;
+    transaction.createdAt = new Date();
+  
+    transaction.save().then((doc) => {
+        res.set(200).send(doc);
+    }, (e) => {
+        res.status(400).send(e);
     });
 });
 
