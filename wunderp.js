@@ -113,8 +113,8 @@ app.delete('/accounts/:id', authenticate, (req, res) => {
     });
 
 });
-/*
-app.patch('/accounts/close', authenticate, (req, res) => {
+
+app.patch('/accounts/update/:id', authenticate, (req, res) => {
 
     var id = req.params.id;
     var body = _.pick(req.body, [
@@ -131,19 +131,16 @@ app.patch('/accounts/close', authenticate, (req, res) => {
     let closer = req.user._id;
     let closingDate = new Date();
 
-
-    Account.update({'_id' : -1}, {$set: body, closer, closingDate}, {new: true}).then((account) => {
+    Account.findOneAndUpdate({_id: id}, {$set: body, closer, closingDate}, {new: true}).then((account) => {
         if (!account) {
-        return res.status(404).send();
+          return res.status(404).send();
         }
-
-        res.send({account});
-    }).catch((e) => {
+    
+        res.send(account);
+      }).catch((e) => {
         res.status(400).send();
-    });
-
+      });
 });
-*/
 
 app.patch('/accounts/close', authenticate, (req, res) => {
     var body = _.pick(req.body, [
