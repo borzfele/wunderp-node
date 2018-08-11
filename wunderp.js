@@ -8,7 +8,7 @@ const {authenticate, authenticateAdmin} = require('./middleware/authenticate');
 const {User} = require('./models/user');
 const {Account} = require('./models/account');
 
-require('./config/config')
+require('./config/config');
 
 const app = express();
 const port = process.env.PORT || 3000; 
@@ -58,18 +58,12 @@ app.delete('/users/me/token', authenticate, (req, res) => {
 
 app.post('/accounts', authenticate, (req, res) => {
     var body = _.pick(req.body, [
-        'openingCash', 
-        'openingDate', 
-        'opener', 
-        'transactions',
-        'closingCash', 
-        'closingDate', 
-        'closer', 
-        'cassaBalance', 
-        'posBalance', 
-        'totalBalance', 
-        'comments']);
+        'openingCash'
+        ]);
     var account = new Account(body);
+
+    account.openingDate = new Date();
+    account.openerId = req.user._id;
   
     account.save().then((doc) => {
         res.set(200).send(doc);
@@ -86,31 +80,94 @@ app.get('/accounts', authenticate, (req, res) => {
     });
   });
 
-  app.get('/accounts/:id', authenticate, (req, res) => {
-    Account.findById(req.params.id).then((account) => {
-      res.send(account);
-    }, (e) => {
-      res.status(400).send(e);
-    });
-  });
+app.get('/accounts/:id', authenticate, (req, res) => {
 
-  app.delete('/accounts/:id', authenticate, (req, res) => {
-    var id = req.params.id;
-  
     if (!ObjectID.isValid(id)) {
-      return res.status(404).send();
-    }
-  
-    Account.findOneAndRemove(id).then((account) => {
-      if (!account) {
         return res.status(404).send();
-      }
-  
-      res.send(account);
-    }).catch((e) => {
-      res.status(400).send();
+    }
+
+    Account.findById(req.params.id).then((account) => {
+        res.send(account);
+    }, (e) => {
+        res.status(400).send(e);
     });
-  });
+
+});
+
+app.delete('/accounts/:id', authenticate, (req, res) => {
+
+    var id = req.params.id;
+
+    if (!ObjectID.isValid(id)) {
+        return res.status(404).send();
+    }
+
+    Account.findOneAndRemove(id).then((account) => {
+        if (!account) {
+        return res.status(404).send();
+        }
+
+        res.send(account);
+    }).catch((e) => {
+        res.status(400).send();
+    });
+
+});
+/*
+app.patch('/accounts/close', authenticate, (req, res) => {
+
+    var id = req.params.id;
+    var body = _.pick(req.body, [
+        'closingCash',
+        'cassaBalance',
+        'terminalBalance',
+        'posBalance',
+        'totalBalance']);
+
+    if (!ObjectID.isValid(id)) {
+        return res.status(404).send();
+    }
+
+    let closer = req.user._id;
+    let closingDate = new Date();
+
+
+    Account.update({'_id' : -1}, {$set: body, closer, closingDate}, {new: true}).then((account) => {
+        if (!account) {
+        return res.status(404).send();
+        }
+
+        res.send({account});
+    }).catch((e) => {
+        res.status(400).send();
+    });
+
+});
+*/
+
+app.patch('/accounts/close', authenticate, (req, res) => {
+    var body = _.pick(req.body, [
+        'closingCash',
+        'cassaBalance',
+        'terminalBalance',
+        'posBalance',
+        'totalBalance']);
+
+    let closer = req.user._id;
+    let closingDate = new Date();
+
+    Account.findOne().sort({_id : -1}).then((account) => {
+        Account.findOneAndUpdate({_id: account._id}, {$set: body, closer, closingDate}, {new: true}).then((todo) => {
+            if (!todo) {
+              return res.status(404).send();
+            }
+        
+            res.send({todo});
+          }).catch((e) => {
+            res.status(400).send();
+          })
+    });
+});
 
 app.listen(port, (err) => {
     console.log(`Listening on port ${port}.`);

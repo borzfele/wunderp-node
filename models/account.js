@@ -10,10 +10,10 @@ let Account = mongoose.model('Account', {
     },
     openingDate: {
         type: Date,
-        required: false
+        required: true
     },
-    opener: {
-        type: mongoose.Schema.Types.Mixed,
+    openerId: {
+        type: mongoose.Schema.Types.ObjectId,
         required: true
     },
     transactions: {
@@ -37,6 +37,10 @@ let Account = mongoose.model('Account', {
         required: false
     },
     posBalance: {
+        type: Number,
+        required: false
+    },
+    terminalBalance: {
         type: Number,
         required: false
     },
