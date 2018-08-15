@@ -296,6 +296,26 @@ app.get('/issues/:id', authenticate, (req, res) => {
 
 });
 
+app.delete('/transactions/:id', authenticate, (req, res) => {
+
+    var id = req.params.id;
+
+    if (!ObjectID.isValid(id)) {
+        return res.status(404).send();
+    }
+
+    Transaction.findOneAndRemove(id).then((transaction) => {
+        if (!transaction) {
+        return res.status(404).send();
+        }
+
+        res.send(transaction);
+    }).catch((e) => {
+        res.status(400).send();
+    });
+
+});
+
 app.listen(port, (err) => {
     console.log(`Listening on port ${port}.`);
 });
