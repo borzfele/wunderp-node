@@ -186,6 +186,136 @@ app.post('/transactions', authenticate, (req, res) => {
     });
 });
 
+app.get('/transactions', authenticate, (req, res) => {
+    Transaction.find().then((transactions) => {
+        res.send(transactions);
+    }, (e) => {
+        res.status(400).send(e)
+    });
+});
+
+app.get('/transactions/:id', authenticate, (req, res) => {
+
+    let id = req.params.id;
+
+    if (!ObjectID.isValid(id)) {
+        return res.status(404).send();
+    }
+
+    Transaction.findById(id).then((transaction) => {
+        res.send(transaction);
+    }, (e) => {
+        res.status(400).send(e);
+    });
+
+});
+
+app.delete('/transactions/:id', authenticate, (req, res) => {
+
+    var id = req.params.id;
+
+    if (!ObjectID.isValid(id)) {
+        return res.status(404).send();
+    }
+
+    Transaction.findOneAndRemove(id).then((transaction) => {
+        if (!transaction) {
+        return res.status(404).send();
+        }
+
+        res.send(transaction);
+    }).catch((e) => {
+        res.status(400).send();
+    });
+
+});
+
+app.patch('/transactions/:id', authenticate, (req, res) => {
+
+    var id = req.params.id;
+    var body = _.pick(req.body, [
+        'value',
+        'description']);
+
+    createdAt = new Date();
+    createdBy = req.user._id;
+
+    if (!ObjectID.isValid(id)) {
+        return res.status(404).send();
+    }
+
+    let closer = req.user._id;
+    let closingDate = new Date();
+
+    Transaction.findOneAndUpdate({_id: id}, {$set: body, createdAt, createdBy}, {new: true}).then((transaction) => {
+        if (!transaction) {
+          return res.status(404).send();
+        }
+    
+        res.send(transaction);
+      }).catch((e) => {
+        res.status(400).send();
+      });
+});
+
+app.post('/issues', authenticate, (req, res) => {
+    var body = _.pick(req.body, [
+        'text'
+        ]);
+
+    var issue = new Issue(body);
+  
+    issue.save().then((doc) => {
+        res.set(200).send(doc);
+    }, (e) => {
+        res.status(400).send(e);
+    });
+});
+
+app.get('/issues', authenticate, (req, res) => {
+    Issue.find().then((issue) => {
+        res.send(issue);
+    }, (e) => {
+        res.status(400).send(e)
+    });
+});
+
+app.get('/issues/:id', authenticate, (req, res) => {
+
+    let id = req.params.id;
+
+    if (!ObjectID.isValid(id)) {
+        return res.status(404).send();
+    }
+
+    Issue.findById(id).then((issue) => {
+        res.send(issue);
+    }, (e) => {
+        res.status(400).send(e);
+    });
+
+});
+
+app.delete('/issues/:id', authenticate, (req, res) => {
+
+    var id = req.params.id;
+
+    if (!ObjectID.isValid(id)) {
+        return res.status(404).send();
+    }
+
+    Issue.findOneAndRemove(id).then((issue) => {
+        if (!issue) {
+        return res.status(404).send();
+        }
+
+        res.send(issue);
+    }).catch((e) => {
+        res.status(400).send();
+    });
+
+});
+
 app.listen(port, (err) => {
     console.log(`Listening on port ${port}.`);
 });
