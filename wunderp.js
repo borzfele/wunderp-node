@@ -296,26 +296,6 @@ app.get('/issues/:id', authenticate, (req, res) => {
 
 });
 
-app.delete('/issues/:id', authenticate, (req, res) => {
-
-    var id = req.params.id;
-
-    if (!ObjectID.isValid(id)) {
-        return res.status(404).send();
-    }
-
-    Issue.findOneAndRemove(id).then((issue) => {
-        if (!issue) {
-        return res.status(404).send();
-        }
-
-        res.send(issue);
-    }).catch((e) => {
-        res.status(400).send();
-    });
-
-});
-
 app.listen(port, (err) => {
     console.log(`Listening on port ${port}.`);
 });
